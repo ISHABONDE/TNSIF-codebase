@@ -4,7 +4,7 @@ public class StudentDemo {
 	public static void main(String[] args) {
 		student isha=new student();
 		isha.isRegistered();
-		
+		System.out.println("isha is registered");
 	}
 
 }
