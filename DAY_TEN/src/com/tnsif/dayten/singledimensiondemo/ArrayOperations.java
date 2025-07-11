@@ -12,7 +12,7 @@ public class ArrayOperations {
 			}
 		}
 		
-		//varible argument function
+		//variable argument function
 		
 		public static int getSum(int... n)
 		{

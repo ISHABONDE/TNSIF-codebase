@@ -22,7 +22,7 @@ public static void main(String[] args) {
 		int b[] = {10,20,30,40,50}; // initialization at the time of declaration 
 		ArrayOperations.printArray(b);
 		
-		//calling of varibles argument function 
+		//calling of variables argument function 
 		System.out.println("Sum of array elements is :"+ ArrayOperations.getSum(b));
 		System.out.println("Sum of array elements is : "+ ArrayOperations.getSum(10,20,30,40,60,80));
 		
@@ -32,7 +32,7 @@ public static void main(String[] args) {
 		
 		//displaying total odd and even no 
 		System.out.println("Odd number : "+ ArrayOperations.getOddCount(b)
-		+"\t Even no "+ ArrayOperations.getEvenCount(b));
+		+"\t Even no : "+ ArrayOperations.getEvenCount(b));
 	
 		System.out.println();
 		
