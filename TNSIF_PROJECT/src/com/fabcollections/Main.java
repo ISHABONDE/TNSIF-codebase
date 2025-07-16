@@ -8,10 +8,14 @@ public class Main {
     public static void main(String[] args) {
         Scanner sc = new Scanner(System.in);
 
+        // Services
         ProductService productService = new ProductService();
         AdminService adminService = new AdminService(productService);
         CustomerService customerService = new CustomerService();
         OrderService orderService = new OrderService(productService);
+        InventoryService inventoryService = new InventoryService(productService);
+        CartService cartService = new CartService();
+        ReportService reportService = new ReportService(orderService);
 
         while (true) {
             System.out.println("\n1. Admin Menu");
@@ -19,14 +23,15 @@ public class Main {
             System.out.println("3. Exit");
             System.out.print("Choose an option: ");
             int mainChoice = sc.nextInt();
-            sc.nextLine(); // consume newline
+            sc.nextLine();
 
             switch (mainChoice) {
                 case 1:
-                    adminMenu(sc, adminService, orderService);
+                    adminMenu(sc, adminService, orderService, reportService);
                     break;
                 case 2:
-                    customerMenu(sc, customerService, productService, orderService);
+                    customerMenu(sc, customerService, productService, 
+                                 orderService, inventoryService, cartService);
                     break;
                 case 3:
                     System.out.println("Exiting...");
@@ -38,7 +43,8 @@ public class Main {
         }
     }
 
-    private static void adminMenu(Scanner sc, AdminService adminService, OrderService orderService) {
+    private static void adminMenu(Scanner sc, AdminService adminService, 
+                                  OrderService orderService, ReportService reportService) {
         while (true) {
             System.out.println("\nAdmin Menu:");
             System.out.println("1. Add Product");
@@ -48,7 +54,9 @@ public class Main {
             System.out.println("5. View Admins");
             System.out.println("6. Update Order Status");
             System.out.println("7. View Orders");
-            System.out.println("8. Return");
+            System.out.println("8. Generate Sales Report");
+            System.out.println("9. Generate Order Status Report");
+            System.out.println("10. Return");
             System.out.print("Choose an option: ");
             int choice = sc.nextInt();
             sc.nextLine();
@@ -76,7 +84,6 @@ public class Main {
                     break;
                 case 3:
                     List<Product> products = adminService.getProducts();
-                    System.out.println("Products:");
                     for (Product p : products) {
                         System.out.println(p);
                     }
@@ -111,14 +118,22 @@ public class Main {
                 case 7:
                     List<Order> orders = orderService.getAllOrders();
                     for (Order o : orders) {
-                        System.out.println("Order ID: " + o.getOrderId() + ", Customer: " 
-                            + o.getCustomer().getUsername() + ", Status: " + o.getStatus());
+                        System.out.println("Order ID: " + o.getOrderId() + 
+                                           ", Customer: " + o.getCustomer().getUsername() +
+                                           ", Status: " + o.getStatus());
                         for (ProductQuantityPair pq : o.getItems()) {
-                            System.out.println("  Product: " + pq.getProduct().getName() + ", Quantity: " + pq.getQuantity());
+                            System.out.println("  Product: " + pq.getProduct().getName() + 
+                                               ", Quantity: " + pq.getQuantity());
                         }
                     }
                     break;
                 case 8:
+                    reportService.generateSalesReport();
+                    break;
+                case 9:
+                    reportService.generateOrderStatusReport();
+                    break;
+                case 10:
                     return;
                 default:
                     System.out.println("Invalid option.");
@@ -126,16 +141,19 @@ public class Main {
         }
     }
 
-    private static void customerMenu(Scanner sc, CustomerService customerService, 
-            ProductService productService, OrderService orderService) {
+    private static void customerMenu(Scanner sc, CustomerService customerService,
+                                     ProductService productService, OrderService orderService,
+                                     InventoryService inventoryService, CartService cartService) {
         while (true) {
             System.out.println("\nCustomer Menu:");
             System.out.println("1. Create Customer");
             System.out.println("2. View Customers");
-            System.out.println("3. Place Order");
-            System.out.println("4. View Orders");
-            System.out.println("5. View Products");
-            System.out.println("6. Return");
+            System.out.println("3. View Products");
+            System.out.println("4. Add to Cart");
+            System.out.println("5. View Cart");
+            System.out.println("6. Place Order");
+            System.out.println("7. View Orders");
+            System.out.println("8. Return");
             System.out.print("Choose an option: ");
             int choice = sc.nextInt();
             sc.nextLine();
@@ -162,6 +180,12 @@ public class Main {
                     }
                     break;
                 case 3:
+                    List<Product> products = productService.getAllProducts();
+                    for (Product p : products) {
+                        System.out.println(p);
+                    }
+                    break;
+                case 4:
                     System.out.print("Enter Customer ID: ");
                     int cid = sc.nextInt();
                     Customer cust = customerService.getCustomerById(cid);
@@ -169,47 +193,62 @@ public class Main {
                         System.out.println("Customer not found.");
                         break;
                     }
-                    while (true) {
-                        System.out.print("Enter Product ID to add to order (or -1 to complete): ");
-                        int pid = sc.nextInt();
-                        if (pid == -1) break;
-                        System.out.print("Enter quantity: ");
-                        int qty = sc.nextInt();
-                        Product p = productService.getProductById(pid);
-                        if (p == null) {
-                            System.out.println("Product not found.");
-                            continue;
-                        }
-                        cust.getShoppingCart().addProduct(p, qty);
-                    }
-                    Order order = orderService.placeOrder(cust);
-                    if (order != null) {
-                        System.out.println("Order placed successfully!");
-                    }
-                    break;
-                case 4:
-                    System.out.print("Enter Customer ID: ");
-                    int custId = sc.nextInt();
-                    Customer c = customerService.getCustomerById(custId);
-                    if (c == null) {
-                        System.out.println("Customer not found.");
+                    System.out.print("Enter Product ID: ");
+                    int prid = sc.nextInt();
+                    Product prod = productService.getProductById(prid);
+                    if (prod == null) {
+                        System.out.println("Product not found.");
                         break;
                     }
-                    List<Order> custOrders = c.getOrders();
-                    for (Order o : custOrders) {
-                        System.out.println("Order ID: " + o.getOrderId() + ", Status: " + o.getStatus());
-                        for (ProductQuantityPair pq : o.getItems()) {
-                            System.out.println("  Product: " + pq.getProduct().getName() + ", Quantity: " + pq.getQuantity());
-                        }
+                    System.out.print("Enter Quantity: ");
+                    int pqty = sc.nextInt();
+                    if (inventoryService.hasStock(prod, pqty)) {
+                        cartService.addToCart(cust, prod, pqty);
+                        System.out.println("Added to cart.");
+                    } else {
+                        System.out.println("Not enough stock.");
                     }
                     break;
                 case 5:
-                    List<Product> products = productService.getAllProducts();
-                    for (Product prod : products) {
-                        System.out.println(prod);
+                    System.out.print("Enter Customer ID: ");
+                    int viewCid = sc.nextInt();
+                    Customer viewCust = customerService.getCustomerById(viewCid);
+                    if (viewCust != null) {
+                        cartService.viewCart(viewCust);
+                    } else {
+                        System.out.println("Customer not found.");
                     }
                     break;
                 case 6:
+                    System.out.print("Enter Customer ID: ");
+                    int placeCid = sc.nextInt();
+                    Customer placeCust = customerService.getCustomerById(placeCid);
+                    if (placeCust != null) {
+                        Order order = orderService.placeOrder(placeCust);
+                        if (order != null) {
+                            System.out.println("Order placed successfully!");
+                        }
+                    } else {
+                        System.out.println("Customer not found.");
+                    }
+                    break;
+                case 7:
+                    System.out.print("Enter Customer ID: ");
+                    int custId = sc.nextInt();
+                    Customer c = customerService.getCustomerById(custId);
+                    if (c != null) {
+                        List<Order> custOrders = c.getOrders();
+                        for (Order o : custOrders) {
+                            System.out.println("Order ID: " + o.getOrderId() + ", Status: " + o.getStatus());
+                            for (ProductQuantityPair pq : o.getItems()) {
+                                System.out.println("  Product: " + pq.getProduct().getName() + ", Quantity: " + pq.getQuantity());
+                            }
+                        }
+                    } else {
+                        System.out.println("Customer not found.");
+                    }
+                    break;
+                case 8:
                     return;
                 default:
                     System.out.println("Invalid option.");
