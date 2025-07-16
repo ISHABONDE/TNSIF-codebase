@@ -1,4 +1,4 @@
-package com.tnsif.dayfourteen.listDemo;
+package com.tnsif.dayfourteen.QueueDemo;
 
 import java.util.ArrayDeque;
 import java.util.Deque;
@@ -6,12 +6,12 @@ import java.util.Deque;
 public class ExDequeDemo {
 
 	public static void main(String[] args) {
-	 
+		
 		Deque<String> deque1=new ArrayDeque<String>();
-		deque1.add("Gayatri");
+		deque1.add("Isha");
 		deque1.add("Karan");
-		deque1.add("trupti");
-		deque1.add("isha");
+		deque1.add("Ashu");
+		deque1.add("Tanu");
 		
 		System.out.println(deque1);
 		
@@ -29,6 +29,6 @@ public class ExDequeDemo {
 		System.out.println(deque1);
 		
 
-		
 	}
+	
 }
